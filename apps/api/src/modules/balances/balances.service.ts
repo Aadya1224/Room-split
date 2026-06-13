@@ -48,11 +48,13 @@ export async function getGroupBalances(groupId: string, requesterId: string): Pr
     balanceMap.set(debit.fromUserId, (balanceMap.get(debit.fromUserId) ?? 0) - (debit._sum.amount?.toNumber() ?? 0));
   }
 
-  const userMap = new Map(members.map((m) => [m.userId, m.user]));
+  const userMap = new Map<string, any>(
+  members.map((m) => [m.userId, m.user])
+);
 
   return Array.from(balanceMap.entries()).map(([userId, netBalance]) => ({
     userId,
-    user: toPublicUser(userMap.get(userId)!),
+   user: toPublicUser(userMap.get(userId) as any),
     netBalance: round2(netBalance),
   }));
 }
