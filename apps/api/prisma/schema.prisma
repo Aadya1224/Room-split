@@ -1,0 +1,222 @@
+generator client {
+  provider = "prisma-client-js"
+}
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum GroupMemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum Category {
+  RENT
+  UTILITIES
+  GROCERIES
+  SUBSCRIPTION
+  ONE_TIME
+  OTHER
+}
+
+enum SplitType {
+  EQUAL
+  PERCENTAGE
+  FIXED
+  WEIGHTED
+}
+
+enum LedgerEntryType {
+  EXPENSE
+  SETTLEMENT
+  ADJUSTMENT
+}
+
+enum SettlementStatus {
+  PENDING
+  COMPLETED
+  CANCELLED
+}
+
+enum Frequency {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String
+  avatarUrl    String?
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  groupMemberships  GroupMember[]
+  expensesPaid      Expense[]       @relation("PaidBy")
+  expenseSplits     ExpenseSplit[]
+  ledgerEntriesFrom LedgerEntry[]   @relation("FromUser")
+  ledgerEntriesTo   LedgerEntry[]   @relation("ToUser")
+  settlementsPaid   Settlement[]    @relation("Payer")
+  settlementsReceived Settlement[]  @relation("Payee")
+  refreshTokens     RefreshToken[]
+
+  @@index([email])
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+}
+
+model Group {
+  id         String   @id @default(uuid())
+  name       String
+  inviteCode String   @unique @default(cuid())
+  createdBy  String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  // Relations
+  members            GroupMember[]
+  expenses           Expense[]
+  ledgerEntries      LedgerEntry[]
+  settlements        Settlement[]
+  recurringTemplates RecurringTemplate[]
+
+  @@index([inviteCode])
+}
+
+model GroupMember {
+  id       String          @id @default(uuid())
+  groupId  String
+  userId   String
+  role     GroupMemberRole @default(MEMBER)
+  joinedAt DateTime        @default(now())
+
+  group Group @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, userId])
+  @@index([groupId])
+  @@index([userId])
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  groupId     String
+  paidById    String
+  amount      Decimal  @db.Decimal(12, 2)
+  description String
+  category    Category
+  splitType   SplitType
+  receiptUrl  String?
+  recurringId String?
+  expenseDate DateTime @default(now())
+  isDeleted   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  group     Group              @relation(fields: [groupId], references: [id])
+  paidBy    User               @relation("PaidBy", fields: [paidById], references: [id])
+  recurring RecurringTemplate? @relation(fields: [recurringId], references: [id])
+  splits    ExpenseSplit[]
+  ledger    LedgerEntry[]
+
+  @@index([groupId, expenseDate])
+  @@index([paidById])
+  @@index([recurringId])
+}
+
+model ExpenseSplit {
+  id         String  @id @default(uuid())
+  expenseId  String
+  userId     String
+  amount     Decimal @db.Decimal(12, 2)
+  percentage Decimal @db.Decimal(8, 4)
+  isSettled  Boolean @default(false)
+
+  expense Expense @relation(fields: [expenseId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([expenseId, userId])
+  @@index([expenseId])
+  @@index([userId])
+}
+
+model LedgerEntry {
+  id           String          @id @default(uuid())
+  groupId      String
+  fromUserId   String
+  toUserId     String
+  amount       Decimal         @db.Decimal(12, 2)
+  description  String
+  entryType    LedgerEntryType
+  refExpenseId String?
+  createdAt    DateTime        @default(now())
+
+  group      Group    @relation(fields: [groupId], references: [id])
+  fromUser   User     @relation("FromUser", fields: [fromUserId], references: [id])
+  toUser     User     @relation("ToUser", fields: [toUserId], references: [id])
+  refExpense Expense? @relation(fields: [refExpenseId], references: [id])
+
+  @@index([groupId, createdAt])
+  @@index([fromUserId])
+  @@index([toUserId])
+}
+
+model Settlement {
+  id        String           @id @default(uuid())
+  groupId   String
+  payerId   String
+  payeeId   String
+  amount    Decimal          @db.Decimal(12, 2)
+  status    SettlementStatus @default(PENDING)
+  settledAt DateTime?
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  group Group @relation(fields: [groupId], references: [id])
+  payer User  @relation("Payer", fields: [payerId], references: [id])
+  payee User  @relation("Payee", fields: [payeeId], references: [id])
+
+  @@index([groupId])
+  @@index([payerId])
+  @@index([payeeId])
+}
+
+model RecurringTemplate {
+  id          String    @id @default(uuid())
+  groupId     String
+  description String
+  amount      Decimal   @db.Decimal(12, 2)
+  category    Category
+  splitType   SplitType @default(EQUAL)
+  frequency   Frequency
+  nextRunDate DateTime
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  group    Group     @relation(fields: [groupId], references: [id])
+  expenses Expense[]
+
+  @@index([nextRunDate, isActive])
+  @@index([groupId])
+}
