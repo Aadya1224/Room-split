@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Filter, ArrowUpRight } from 'lucide-react';
+import { Plus,  ArrowUpRight } from 'lucide-react';
 import { useGroups } from '@/hooks/useGroups';
 import { useExpenses } from '@/hooks/useExpenses';
 import { useAuthStore } from '@/store/authStore';
-import { Avatar, CategoryBadge, EmptyState, PageSpinner, Spinner } from '@/components/ui';
+import { EmptyState, PageSpinner, Spinner } from '@/components/ui';
 import { formatCurrency, formatDate, CATEGORY_CONFIG } from '@/lib/utils';
 import ExpenseFormModal from './ExpenseFormModal';
 import type { Expense } from '@roomsplit/types';

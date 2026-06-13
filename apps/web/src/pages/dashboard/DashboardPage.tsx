@@ -3,7 +3,7 @@ import { Users, TrendingUp, TrendingDown, Plus, ArrowRight, Receipt } from 'luci
 import { useGroups } from '@/hooks/useGroups';
 import { useAuthStore } from '@/store/authStore';
 import { Avatar, PageSpinner, EmptyState } from '@/components/ui';
-import { formatCurrency, formatRelative } from '@/lib/utils';
+import { formatCurrency } from '@/lib/utils';
 import { useBalances } from '@/hooks/useExpenses';
 
 // ─── Per-group balance summary card ──────────────────────────────────────────

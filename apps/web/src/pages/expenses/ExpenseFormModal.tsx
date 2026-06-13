@@ -1,8 +1,8 @@
-import { useEffect, useState } from 'react';
-import { useForm, useFieldArray, Controller } from 'react-hook-form';
+import { useEffect } from 'react';
+import { useForm, useFieldArray } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Plus, Minus } from 'lucide-react';
+
 import { useGroups } from '@/hooks/useGroups';
 import { useCreateExpense } from '@/hooks/useExpenses';
 import { Modal, Spinner, Avatar } from '@/components/ui';
