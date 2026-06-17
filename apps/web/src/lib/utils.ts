@@ -79,10 +79,30 @@ export function getInitials(name: string): string {
 
 // ─── Error message extraction ─────────────────────────────────────────────────
 export function getErrorMessage(error: unknown): string {
-  if (error && typeof error === 'object' && 'response' in error) {
-    const axiosErr = error as { response?: { data?: { error?: string } } };
-    return axiosErr.response?.data?.error ?? 'Something went wrong';
+  if (!error) return 'Something went wrong';
+
+  if (typeof error === 'string') return error;
+
+  if (typeof error === 'object') {
+    // Axios error with response data
+    if ('response' in error) {
+      const axiosErr = error as { response?: { data?: { error?: string | object } } };
+      const apiError = axiosErr.response?.data?.error;
+      if (typeof apiError === 'string') return apiError;
+      if (typeof apiError === 'object') return JSON.stringify(apiError);
+      return 'Server error';
+    }
+
+    // Standard Error object
+    if (error instanceof Error) return error.message;
+
+    // Any other object
+    try {
+      return JSON.stringify(error);
+    } catch {
+      return 'Unknown error object';
+    }
   }
-  if (error instanceof Error) return error.message;
-  return 'Something went wrong';
+
+  return String(error);
 }
