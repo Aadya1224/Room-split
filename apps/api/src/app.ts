@@ -35,9 +35,31 @@ const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
 // Security
 app.use(helmet());
+
+const ALLOWED_ORIGINS = [
+  process.env.CORS_ORIGIN,
+  'http://localhost:5173',
+  'http://localhost:4173',
+].filter(Boolean) as string[];
+
 app.use(
   cors({
-    origin:      process.env.CORS_ORIGIN ?? 'http://localhost:5173',
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+
+      const isAllowed =
+        ALLOWED_ORIGINS.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        origin.endsWith('.railway.app');
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        logger.warn(`CORS blocked for origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
     credentials: true,
   })
 );

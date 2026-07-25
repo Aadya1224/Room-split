@@ -23,9 +23,19 @@ if (process.env.NODE_ENV === 'development') {
   });
 }
 
-export async function connectDB(): Promise<void> {
-  await prisma.$connect();
-  logger.info('✅ PostgreSQL connected via Prisma');
+export async function connectDB(retries = 5): Promise<void> {
+  for (let i = 0; i < retries; i++) {
+    try {
+      await prisma.$connect();
+      logger.info('✅ PostgreSQL connected via Prisma');
+      return;
+    } catch (err) {
+      if (i === retries - 1) throw err;
+      const delay = Math.pow(2, i) * 1000;
+      logger.warn(`⚠️ DB connection failed (attempt ${i + 1}/${retries}). Retrying in ${delay}ms...`);
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
+  }
 }
 
 export async function disconnectDB(): Promise<void> {
