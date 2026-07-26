@@ -4,14 +4,16 @@ import { useAuthStore } from '@/store/authStore';
 // ─── Base instance ─────────────────────────────────────────────────────────────
 
 
-export const apiClient = axios.create({
-  baseURL:         BASE_URL,
-  withCredentials: true,   // send httpOnly refresh token cookie
-  headers: { 'Content-Type': 'application/json' },
-
-});
 const BASE_URL = import.meta.env.VITE_API_URL || '/api';
 console.log("BASE_URL =", BASE_URL);
+
+export const apiClient = axios.create({
+  baseURL: BASE_URL,
+  withCredentials: true,
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
 
 // ─── Request interceptor – attach access token ────────────────────────────────
 apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
