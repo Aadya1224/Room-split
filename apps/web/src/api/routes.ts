@@ -17,22 +17,22 @@ import type {
 
 export const authApi = {
   register: (data: { name: string; email: string; password: string }) =>
-    post<AuthResponse>('/auth/register', data),
+    post<AuthResponse>('/api/auth/register', data),
 
   login: (data: { email: string; password: string }) =>
-    post<AuthResponse>('/auth/login', data),
+    post<AuthResponse>('/api/auth/login', data),
 
   logout: () =>
-    post<{ message: string }>('/auth/logout'),
+    post<{ message: string }>('/api/auth/logout'),
 
   refresh: () =>
-    post<{ accessToken: string }>('/auth/refresh'),
+    post<{ accessToken: string }>('/api/auth/refresh'),
 
   me: () =>
-    get<UserPublic>('/auth/me'),
+    get<UserPublic>('/api/auth/me'),
 
   updateProfile: (data: { name?: string; avatarUrl?: string }) =>
-    patch<UserPublic>('/auth/me', data),
+    patch<UserPublic>('/api/auth/me', data),
 };
 
 // ─── Groups ───────────────────────────────────────────────────────────────────
