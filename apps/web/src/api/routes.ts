@@ -39,31 +39,37 @@ export const authApi = {
 
 export const groupsApi = {
   create: (name: string) =>
-    post<Group>('/groups', { name }),
+    post<Group>('/api/groups', { name }),
 
   list: () =>
-    get<Group[]>('/groups'),
+    get<Group[]>('/api/groups'),
 
   get: (groupId: string) =>
-    get<Group>(`/groups/${groupId}`),
+    get<Group>(`/api/groups/${groupId}`),
 
   update: (groupId: string, data: { name?: string }) =>
-    patch<Group>(`/groups/${groupId}`, data),
+    patch<Group>(`/api/groups/${groupId}`, data),
 
   delete: (groupId: string) =>
-    del<{ message: string }>(`/groups/${groupId}`),
+    del<{ message: string }>(`/api/groups/${groupId}`),
 
   join: (inviteCode: string) =>
-    post<Group>(`/groups/join/${inviteCode}`),
+    post<Group>(`/api/groups/join/${inviteCode}`),
 
   regenerateInvite: (groupId: string) =>
-    post<{ inviteCode: string }>(`/groups/${groupId}/invite/regenerate`),
+    post<{ inviteCode: string }>(
+      `/api/groups/${groupId}/invite/regenerate`
+    ),
 
   removeMember: (groupId: string, userId: string) =>
-    del<{ message: string }>(`/groups/${groupId}/members/${userId}`),
+    del<{ message: string }>(
+      `/api/groups/${groupId}/members/${userId}`
+    ),
 
   promoteMember: (groupId: string, userId: string) =>
-    patch<{ message: string }>(`/groups/${groupId}/members/${userId}/promote`),
+    patch<{ message: string }>(
+      `/api/groups/${groupId}/members/${userId}/promote`
+    ),
 };
 
 // ─── Expenses ─────────────────────────────────────────────────────────────────
