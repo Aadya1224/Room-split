@@ -84,51 +84,51 @@ export interface ExpenseListParams {
 
 export const expensesApi = {
   create: (groupId: string, data: CreateExpenseBody) =>
-    post<Expense>(`/groups/${groupId}/expenses`, data),
+  post(`/api/groups/${groupId}/expenses`, data),
 
   list: (groupId: string, params?: ExpenseListParams) =>
-    get<{ items: Expense[]; nextCursor: string | null }>(`/groups/${groupId}/expenses`, params as any),
+    get<{ items: Expense[]; nextCursor: string | null }>(`/api/groups/${groupId}/expenses`, params as any),
 
   get: (groupId: string, expenseId: string) =>
-    get<Expense>(`/groups/${groupId}/expenses/${expenseId}`),
+    get<Expense>(`/api/groups/${groupId}/expenses/${expenseId}`),
 
   update: (groupId: string, expenseId: string, data: Partial<CreateExpenseBody>) =>
-    patch<Expense>(`/groups/${groupId}/expenses/${expenseId}`, data),
+    patch<Expense>(`/api/groups/${groupId}/expenses/${expenseId}`, data),
 
   delete: (groupId: string, expenseId: string) =>
-    del<{ message: string }>(`/groups/${groupId}/expenses/${expenseId}`),
+    del<{ message: string }>(`/api/groups/${groupId}/expenses/${expenseId}`),
 };
 
 // ─── Balances ─────────────────────────────────────────────────────────────────
 
 export const balancesApi = {
   get: (groupId: string) =>
-    get<Balance[]>(`/groups/${groupId}/balances`),
+    get<Balance[]>(`/api/groups/${groupId}/balances`),
 
   optimized: (groupId: string) =>
-    get<SettlementSuggestion[]>(`/groups/${groupId}/balances/optimized`),
+    get<SettlementSuggestion[]>(`/api/groups/${groupId}/balances/optimized`),
 
   ledger: (groupId: string, cursor?: string, limit?: number) =>
     get<{ items: LedgerEntry[]; nextCursor: string | null }>(
-      `/groups/${groupId}/balances/ledger`,
+      `/api/groups/${groupId}/balances/ledger`,
       { cursor, limit }
     ),
 
   createSettlement: (groupId: string, data: { payeeId: string; amount: number }) =>
-    post<Settlement>(`/groups/${groupId}/balances/settlements`, data),
+    post<Settlement>(`/api/groups/${groupId}/balances/settlements`, data),
 
   listSettlements: (groupId: string) =>
-    get<Settlement[]>(`/groups/${groupId}/balances/settlements`),
+    get<Settlement[]>(`/api/groups/${groupId}/balances/settlements`),
 
   analytics: (groupId: string, months?: number) =>
-    get<MonthlySpend[]>(`/groups/${groupId}/balances/analytics`, { months }),
+    get<MonthlySpend[]>(`/api/groups/${groupId}/balances/analytics`, { months }),
 };
 
 // ─── Recurring ────────────────────────────────────────────────────────────────
 
 export const recurringApi = {
   list: (groupId: string) =>
-    get<RecurringTemplate[]>(`/groups/${groupId}/recurring`),
+    get<RecurringTemplate[]>(`/api/groups/${groupId}/recurring`),
 
   create: (groupId: string, data: {
     description: string;
@@ -138,7 +138,7 @@ export const recurringApi = {
     frequency:   string;
     nextRunDate: string;
   }) =>
-    post<RecurringTemplate>(`/groups/${groupId}/recurring`, data),
+    post<RecurringTemplate>(`/api/groups/${groupId}/recurring`, data),
 
   update: (groupId: string, templateId: string, data: Partial<{
     description: string;
@@ -149,8 +149,8 @@ export const recurringApi = {
     nextRunDate: string;
     isActive:    boolean;
   }>) =>
-    patch<RecurringTemplate>(`/groups/${groupId}/recurring/${templateId}`, data),
+    patch<RecurringTemplate>(`/api/groups/${groupId}/recurring/${templateId}`, data),
 
   delete: (groupId: string, templateId: string) =>
-    del<{ message: string }>(`/groups/${groupId}/recurring/${templateId}`),
+    del<{ message: string }>(`/api/groups/${groupId}/recurring/${templateId}`),
 };
