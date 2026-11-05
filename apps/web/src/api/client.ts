@@ -1,9 +1,11 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/store/authStore';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL?.replace(/\/$/, '') || '/api';
+
 // ─── Base instance ─────────────────────────────────────────────────────────────
 export const apiClient = axios.create({
-  baseURL:         '/api',
+  baseURL:         API_BASE_URL,
   withCredentials: true,   // send httpOnly refresh token cookie
   headers: { 'Content-Type': 'application/json' },
 });
@@ -56,7 +58,7 @@ apiClient.interceptors.response.use(
 
       try {
         const res = await axios.post<{ success: true; data: { accessToken: string } }>(
-          '/api/auth/refresh',
+          `${API_BASE_URL}/auth/refresh`,
           {},
           { withCredentials: true }
         );

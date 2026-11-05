@@ -51,7 +51,7 @@ export async function runRecurringJob(): Promise<void> {
         await createExpenseInTransaction(tx, {
           groupId:     template.groupId,
           paidById,
-          amount:      template.amount.toNumber(),
+          amount:      Number(template.amount),
           description: template.description,
           category:    template.category,
           splitType:   template.splitType,

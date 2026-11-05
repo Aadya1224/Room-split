@@ -6,10 +6,9 @@ import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 
 import { logger } from './shared/logger';
-import { connectDB, disconnectDB } from './shared/prisma';
+import { connectDB } from './shared/prisma';
 import { errorHandler } from './middleware/errorHandler';
 import { defaultLimiter } from './middleware/rateLimiter';
-import { startScheduler } from './modules/recurring/scheduler';
 
 // ── Routers
 import authRouter      from './modules/auth/auth.router';
@@ -19,6 +18,8 @@ import balancesRouter  from './modules/balances/balances.router';
 import recurringRouter from './modules/recurring/recurring.router';
 import notificationsRouter from './modules/notifications/notifications.router';
 import feedbackRouter from './modules/feedback/feedback.router';
+import sharedHomeRouter from './modules/sharedHome.router';
+import { runRecurringJob } from './modules/recurring/scheduler';
 
 // ─── Validate required env vars ───────────────────────────────────────────────
 
@@ -33,7 +34,6 @@ for (const key of REQUIRED_ENV) {
 // ─── App setup ────────────────────────────────────────────────────────────────
 
 const app  = express();
-const PORT = parseInt(process.env.PORT ?? '4000', 10);
 
 // Security
 app.use(helmet());
@@ -68,8 +68,25 @@ app.get('/health', (_req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+let databaseConnection: Promise<void> | null = null;
+app.use('/api', async (_req, _res, next) => {
+  try {
+    if (!databaseConnection) {
+      databaseConnection = connectDB().catch((error) => {
+        databaseConnection = null;
+        throw error;
+      });
+    }
+    await databaseConnection;
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.use('/api/auth',    authRouter);
 app.use('/api/groups',  groupsRouter);
+app.use('/api/groups/:groupId/shared', sharedHomeRouter);
 
 // Nested group resource routers (inherit :groupId via mergeParams)
 app.use('/api/groups/:groupId/expenses',  expensesRouter);
@@ -78,6 +95,20 @@ app.use('/api/groups/:groupId/recurring', recurringRouter);
 app.use('/api/notifications', notificationsRouter);
 app.use('/api/feedback', feedbackRouter);
 
+app.get('/api/cron/recurring', async (req, res, next) => {
+  const secret = process.env.CRON_SECRET;
+  if (!secret || req.headers.authorization !== `Bearer ${secret}`) {
+    res.status(401).json({ success: false, error: 'Unauthorized' });
+    return;
+  }
+  try {
+    await runRecurringJob();
+    res.json({ success: true, data: { message: 'Recurring expenses processed' } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 // 404 for unmatched routes
 app.use((_req, res) => {
   res.status(404).json({ success: false, error: 'Route not found' });
@@ -85,45 +116,5 @@ app.use((_req, res) => {
 
 // Global error handler (must be last)
 app.use(errorHandler);
-
-// ─── Server start ─────────────────────────────────────────────────────────────
-
-async function start(): Promise<void> {
-  await connectDB();
-
-  const server = app.listen(PORT, () => {
-    logger.info(`🚀 API server listening on http://localhost:${PORT}`);
-    logger.info(`   Environment: ${process.env.NODE_ENV ?? 'development'}`);
-  });
-
-  // Start recurring expense scheduler
-  if (process.env.DISABLE_SCHEDULER !== 'true') {
-    startScheduler();
-  }
-
-  // ── Graceful shutdown ──────────────────────────────────────────────────────
-  const shutdown = async (signal: string) => {
-    logger.info(`Received ${signal} — shutting down gracefully`);
-    server.close(async () => {
-      await disconnectDB();
-      logger.info('Server closed');
-      process.exit(0);
-    });
-    // Force exit after 10s
-    setTimeout(() => process.exit(1), 10_000).unref();
-  };
-
-  process.on('SIGTERM', () => shutdown('SIGTERM'));
-  process.on('SIGINT',  () => shutdown('SIGINT'));
-
-  process.on('unhandledRejection', (reason) => {
-    logger.error({ reason }, 'Unhandled Promise rejection');
-  });
-}
-
-start().catch((err) => {
-  logger.fatal({ err }, 'Failed to start server');
-  process.exit(1);
-});
 
 export default app;

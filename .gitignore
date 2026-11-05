@@ -5,3 +5,7 @@ build
 .env.local
 *.log
 .DS_Store
+
+apps/api/prisma/dev.db
+apps/api/prisma/dev.db-journal
+apps/api/.env.hosted

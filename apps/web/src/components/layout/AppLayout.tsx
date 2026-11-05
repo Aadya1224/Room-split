@@ -10,6 +10,7 @@ import {
   SplitSquareVertical,
   Menu,
   X,
+  ShoppingBasket,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useAuthStore } from '@/store/authStore';
@@ -22,6 +23,7 @@ const NAV_ITEMS = [
   { to: '/dashboard',  icon: LayoutDashboard, label: 'Dashboard' },
   { to: '/groups',     icon: Users,            label: 'Groups'    },
   { to: '/expenses',   icon: Receipt,          label: 'Expenses'  },
+  { to: '/shared-home', icon: ShoppingBasket, label: 'Shared home' },
   { to: '/settings',   icon: Settings,         label: 'Settings'  },
   { to: '/feedback',   icon: MessageSquare,    label: 'Feedback'  },
 ];
