@@ -42,10 +42,10 @@ export async function getGroupBalances(groupId: string, requesterId: string): Pr
   members.forEach((m) => balanceMap.set(m.userId, 0));
 
   for (const credit of ledgerCredits) {
-    balanceMap.set(credit.toUserId, (balanceMap.get(credit.toUserId) ?? 0) + (credit._sum.amount?.toNumber() ?? 0));
+    balanceMap.set(credit.toUserId, (balanceMap.get(credit.toUserId) ?? 0) + (Number(credit._sum.amount ?? 0)));
   }
   for (const debit of ledgerDebits) {
-    balanceMap.set(debit.fromUserId, (balanceMap.get(debit.fromUserId) ?? 0) - (debit._sum.amount?.toNumber() ?? 0));
+    balanceMap.set(debit.fromUserId, (balanceMap.get(debit.fromUserId) ?? 0) - (Number(debit._sum.amount ?? 0)));
   }
 
   const userMap = new Map(members.map((m) => [m.userId, m.user]));
@@ -109,7 +109,7 @@ export async function getLedger(
   return {
     items: items.map((e) => ({
       id: e.id, groupId: e.groupId, fromUserId: e.fromUserId, toUserId: e.toUserId,
-      amount: e.amount.toString(), description: e.description, entryType: e.entryType,
+      amount: e.amount.toString(), description: e.description, entryType: e.entryType as LedgerEntry["entryType"],
       refExpenseId: e.refExpenseId, createdAt: e.createdAt.toISOString(),
       fromUser: toPublicUser(e.fromUser), toUser: toPublicUser(e.toUser),
     })),
@@ -145,7 +145,7 @@ export async function createSettlement(
   return {
     id: settlement.id, groupId: settlement.groupId,
     payerId: settlement.payerId, payeeId: settlement.payeeId,
-    amount: settlement.amount.toString(), status: settlement.status,
+    amount: settlement.amount.toString(), status: settlement.status as Settlement["status"],
     settledAt: settlement.settledAt?.toISOString() ?? null,
     createdAt: settlement.createdAt.toISOString(),
     payer: toPublicUser(settlement.payer), payee: toPublicUser(settlement.payee),
@@ -165,7 +165,7 @@ export async function getSettlements(groupId: string, requesterId: string): Prom
 
   return settlements.map((s) => ({
     id: s.id, groupId: s.groupId, payerId: s.payerId, payeeId: s.payeeId,
-    amount: s.amount.toString(), status: s.status,
+    amount: s.amount.toString(), status: s.status as Settlement["status"],
     settledAt: s.settledAt?.toISOString() ?? null, createdAt: s.createdAt.toISOString(),
     payer: toPublicUser(s.payer), payee: toPublicUser(s.payee),
   }));
@@ -189,7 +189,7 @@ export async function getGroupAnalytics(
     const key = `${e.expenseDate.getFullYear()}-${String(e.expenseDate.getMonth() + 1).padStart(2, '0')}`;
     if (!monthMap.has(key)) monthMap.set(key, { total: 0, byCategory: {} });
     const entry = monthMap.get(key)!;
-    const amt   = e.amount.toNumber();
+    const amt   = Number(e.amount);
     entry.total = round2(entry.total + amt);
     entry.byCategory[e.category] = round2((entry.byCategory[e.category] ?? 0) + amt);
   }

@@ -163,7 +163,7 @@ export async function updateExpense(
     await tx.ledgerEntry.deleteMany({ where: { refExpenseId: expenseId } });
     await tx.expenseSplit.deleteMany({ where: { expenseId } });
 
-    const amount    = body.amount    ?? existing.amount.toNumber();
+    const amount    = body.amount    ?? Number(existing.amount);
     const splitType = body.splitType ?? existing.splitType;
     const members   = await tx.groupMember.findMany({ where: { groupId } });
     const memberIds = members.map((m: { userId: string }) => m.userId);

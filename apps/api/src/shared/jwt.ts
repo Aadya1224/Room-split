@@ -9,18 +9,28 @@ export interface JwtPayload {
   exp?: number;
 }
 
-const ACCESS_SECRET  = process.env.JWT_ACCESS_SECRET!;
-const REFRESH_SECRET = process.env.JWT_REFRESH_SECRET!;
 const ACCESS_TTL     = process.env.JWT_ACCESS_TTL  ?? '15m';
 const REFRESH_TTL    = process.env.JWT_REFRESH_TTL ?? '30d';
 
+function accessSecret(): string {
+  const secret = process.env.JWT_ACCESS_SECRET;
+  if (!secret) throw new Error('JWT_ACCESS_SECRET is not configured');
+  return secret;
+}
+
+function refreshSecret(): string {
+  const secret = process.env.JWT_REFRESH_SECRET;
+  if (!secret) throw new Error('JWT_REFRESH_SECRET is not configured');
+  return secret;
+}
+
 export function signAccessToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, ACCESS_SECRET, { expiresIn: ACCESS_TTL } as jwt.SignOptions);
+  return jwt.sign(payload, accessSecret(), { expiresIn: ACCESS_TTL } as jwt.SignOptions);
 }
 
 export function verifyAccessToken(token: string): JwtPayload {
   try {
-    return jwt.verify(token, ACCESS_SECRET) as JwtPayload;
+    return jwt.verify(token, accessSecret()) as JwtPayload;
   } catch (err) {
     if (err instanceof jwt.TokenExpiredError) {
       throw new UnauthorizedError('Access token expired');
@@ -30,12 +40,12 @@ export function verifyAccessToken(token: string): JwtPayload {
 }
 
 export function signRefreshToken(payload: Omit<JwtPayload, 'iat' | 'exp'>): string {
-  return jwt.sign(payload, REFRESH_SECRET, { expiresIn: REFRESH_TTL } as jwt.SignOptions);
+  return jwt.sign(payload, refreshSecret(), { expiresIn: REFRESH_TTL } as jwt.SignOptions);
 }
 
 export function verifyRefreshToken(token: string): JwtPayload {
   try {
-    return jwt.verify(token, REFRESH_SECRET) as JwtPayload;
+    return jwt.verify(token, refreshSecret()) as JwtPayload;
   } catch {
     throw new UnauthorizedError('Invalid refresh token');
   }

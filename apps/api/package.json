@@ -3,15 +3,19 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "tsx watch src/app.ts",
+    "predev": "prisma db push --schema prisma/schema.sqlite.prisma",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/app.js",
-    "db:generate": "prisma generate",
+    "start": "node dist/server.js",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
     "db:studio": "prisma studio",
     "db:seed": "tsx prisma/seed.ts",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prebuild": "prisma generate --schema prisma/schema.prisma",
+    "db:generate": "prisma generate --schema prisma/schema.prisma",
+    "db:push:local": "prisma db push --schema prisma/schema.sqlite.prisma",
+    "postinstall": "prisma generate --schema prisma/schema.prisma"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.24.0",

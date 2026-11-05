@@ -1,4 +1,4 @@
-import { PrismaClient, Category, SplitType, Frequency } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -66,9 +66,9 @@ async function main() {
       groupId: group.id,
       description: 'Monthly Rent',
       amount: 30000,
-      category: Category.RENT,
-      splitType: SplitType.EQUAL,
-      frequency: Frequency.MONTHLY,
+      category: 'RENT',
+      splitType: 'EQUAL',
+      frequency: 'MONTHLY',
       nextRunDate: new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1),
     },
   });

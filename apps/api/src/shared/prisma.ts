@@ -25,10 +25,10 @@ if (process.env.NODE_ENV === 'development') {
 
 export async function connectDB(): Promise<void> {
   await prisma.$connect();
-  logger.info('✅ PostgreSQL connected via Prisma');
+  logger.info('✅ Database connected via Prisma');
 }
 
 export async function disconnectDB(): Promise<void> {
   await prisma.$disconnect();
-  logger.info('PostgreSQL disconnected');
+  logger.info('Database disconnected');
 }

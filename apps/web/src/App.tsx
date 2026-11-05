@@ -14,6 +14,7 @@ import JoinGroupPage   from '@/pages/groups/JoinGroupPage';
 import ExpensesPage    from '@/pages/expenses/ExpensesPage';
 import SettingsPage    from '@/pages/settings/SettingsPage';
 import FeedbackPage    from '@/pages/feedback/FeedbackPage';
+import SharedHomePage  from '@/pages/SharedHomePage';
 
 export default function App() {
   return (
@@ -35,6 +36,7 @@ export default function App() {
           <Route path="/expenses"          element={<ExpensesPage />} />
           <Route path="/settings"          element={<SettingsPage />} />
           <Route path="/feedback"          element={<FeedbackPage />} />
+          <Route path="/shared-home"       element={<SharedHomePage />} />
         </Route>
 
         {/* ── Fallback ── */}
